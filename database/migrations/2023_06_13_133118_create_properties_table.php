@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('properties', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->integer('sc_id')->unique()->nullable();
             $table->text('description');
             $table->decimal('price_usd', 10, 2);
-            $table->decimal('eth_price', 10, 2);
+            $table->decimal('eth_price', 10, 2)->nullable();
 
             // TODO: feature
             $table->integer('bedrooms')->nullable();
