@@ -15,9 +15,14 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            // Property KYC info
+            $table->string("first_name")->nullable();
+            $table->string("last_name")->nullable();
+            $table->string('email')->nullable()->unique();
+            $table->boolean('verified')->default(false);
+            // Wallet Auth
             $table->string('eth_address')->unique();
             $table->string('nonce')->nullable()->unique();
-            $table->string('email')->nullable()->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('verification_token')->nullable();
             $table->string('password')->nullable();

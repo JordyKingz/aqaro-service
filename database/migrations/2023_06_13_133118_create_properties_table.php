@@ -14,12 +14,14 @@ return new class extends Migration
         Schema::create('properties', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->text('description');
-            $table->decimal('price', 10, 2);
+            $table->decimal('price_usd', 10, 2);
+            $table->decimal('eth_price', 10, 2);
 
-            $table->integer('bedrooms');
-            $table->integer('bathrooms');
-            $table->integer('floors');
-            $table->integer('area');
+            // TODO: feature
+            $table->integer('bedrooms')->nullable();
+            $table->integer('bathrooms')->nullable();
+            $table->integer('floors')->nullable();
+            $table->integer('area')->nullable();
 
             $table->string('address');
             $table->string('city');
