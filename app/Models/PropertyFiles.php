@@ -17,6 +17,18 @@ class PropertyFiles extends Model
     protected $keyType = 'string';
 
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'name',
+        'storage_url',
+        'type',
+        'property_id',
+    ];
+
+    /**
      * The attributes that should be cast.
      *
      * @var array<string, string>

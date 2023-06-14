@@ -2,24 +2,37 @@
 
 namespace App\Http\Controllers;
 
+use App\API\CoingeckoApi;
 use App\Http\Requests\CreatePropertyRequest;
+use App\Models\Enums\FileType;
 use App\Models\Property;
+use App\Models\PropertyFiles;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Aws\S3\S3Client;
+
 
 class PropertyController extends Controller
 {
+    protected $coingeckoApi;
+
+    public function __construct(CoingeckoApi $coingeckoApi)
+    {
+        $this->coingeckoApi = $coingeckoApi;
+    }
+
     public function create(CreatePropertyRequest $_request): JsonResponse
     {
-        dd($_request);
         $request = $_request->validated();
 
-        dd($request);
-        // todo move to service
+        $user = $_request->user();
 
-        $user = $request->user();
+//        $price = $this->coingeckoApi->getTokenPrice('ethereum', 'usd');
+//        $priceInDollars = $price['ethereum']['usd'] * $request['property']['price'];
 
         $propertyId = Str::uuid();
         $property = new Property([
@@ -33,21 +46,27 @@ class PropertyController extends Controller
             'country' => $request['address']['country'],
         ]);
 
+        $user->properties()->save($property);
+
         // process files
-        if ($request->hasFile('files')) {
+        if (Arr::has($request, 'files')) {
             $path = "aqaro/{$propertyId}";
             Storage::disk('do_spaces')->makeDirectory($path);
             $storage_url = Storage::disk('do_spaces')->url($path);
-            foreach ($request->file('files') as $file) {
+            $files = $request['files'];
+
+            foreach ($files as $file) {
                 Storage::disk('do_spaces')->putFileAs($path, $file, $file->getClientOriginalName());
-                $property->files()->create([
+
+                $propertyFile = new PropertyFiles([
                     'name' => $file->getClientOriginalName(),
-                    'path' => $storage_url
+                    'storage_url' => $storage_url . '/' . $file->getClientOriginalName(),
+                    'type' => FileType::fromMimeType($file->getMimeType()),
                 ]);
+
+                $property->files()->save($propertyFile);
             }
         }
-
-        $user->properties()->create($property);
 
         $user->first_name = $request['user']['first_name'];
         $user->last_name = $request['user']['last_name'];
@@ -67,18 +86,13 @@ class PropertyController extends Controller
     {
         $request->validate([
             'id' => 'required|string',
-            'name' => 'required|string',
-            'description' => 'required|string',
-            'price' => 'required|numeric',
-            'bedrooms' => 'required|numeric',
-            'bathrooms' => 'required|numeric',
-            'storeys' => 'required|numeric',
-            'garages' => 'required|numeric',
+            'sc_id' => 'required|numeric'
         ]);
 
         // todo move to service
         $property = Property::findOrFail($request->id);
-        $property->update($request->all());
+        $property->sc_id = $request->sc_id;
+        $property->save();
 
         return response()->json([
             'message' => 'Property updated successfully',
@@ -100,6 +114,21 @@ class PropertyController extends Controller
     {
         $property = Property::findOrFail($id);
 
-        return response()->json($property,200);
+        $path = "aqaro/{$id}";
+        $files = Storage::disk('do_spaces')->files($path);
+
+        $temporaryUrls = [];
+        foreach ($files as $file) {
+            Storage::disk('public')->put($file, Storage::disk('do_spaces')->get($file));
+            $url = Storage::disk('local')->url($file);
+            $temporaryUrls[] = $url;
+        }
+
+        $dto = [
+            "property" => $property,
+            "files" => $temporaryUrls
+        ];
+
+        return response()->json($dto,200);
     }
 }

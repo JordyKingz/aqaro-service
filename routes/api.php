@@ -22,11 +22,14 @@ Route::group(['prefix' => 'ethereum'], function () {
 
 Route::post('/subscribe', [App\Http\Controllers\SubscriptionController::class,'store']);
 
+Route::group(['prefix' => 'property'], function () {
+    Route::get('get-all/{page}/{limit}', [App\Http\Controllers\PropertyController::class, 'getAll']);
+    Route::get('get-by-id/{id}', [App\Http\Controllers\PropertyController::class, 'getById']);
+});
+
 Route::middleware(['auth:sanctum', 'abilities:is-web3-auth'])->group(function () {
     Route::group(['prefix' => 'property'], function () {
         Route::post('create', [App\Http\Controllers\PropertyController::class, 'create']);
         Route::post('update', [App\Http\Controllers\PropertyController::class, 'update']);
-        Route::get('get-all/{page}/{limit}', [App\Http\Controllers\PropertyController::class, 'getAll']);
-        Route::get('get-by-id/{id}', [App\Http\Controllers\PropertyController::class, 'getById']);
     });
 });
