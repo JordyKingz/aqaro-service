@@ -119,8 +119,7 @@ class PropertyController extends Controller
 
         $temporaryUrls = [];
         foreach ($files as $file) {
-            Storage::disk('public')->put($file, Storage::disk('do_spaces')->get($file));
-            $url = Storage::disk('local')->url($file);
+            $url = Storage::disk('do_spaces')->temporaryUrl($file, now()->addMinutes(5));
             $temporaryUrls[] = $url;
         }
 
