@@ -25,6 +25,8 @@ Route::post('/subscribe', [App\Http\Controllers\SubscriptionController::class,'s
 Route::group(['prefix' => 'property'], function () {
     Route::get('get-all/{page}/{limit}', [App\Http\Controllers\PropertyController::class, 'getAll']);
     Route::get('get-by-id/{id}', [App\Http\Controllers\PropertyController::class, 'getById']);
+
+    Route::get('get-thumbnail/{sc_id}', [App\Http\Controllers\PropertyController::class, 'getThumbnail']);
 });
 
 Route::middleware(['auth:sanctum', 'abilities:is-web3-auth'])->group(function () {

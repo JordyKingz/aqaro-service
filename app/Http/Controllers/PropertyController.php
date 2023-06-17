@@ -104,6 +104,10 @@ class PropertyController extends Controller
     {
         $properties = Property::paginate($limit, ['*'], 'page', $page);
 
+//        foreach($properties->files as $file) {
+//            $file->storage_url = Storage::disk('do_spaces')->temporaryUrl($file->storage_url, now()->addMinutes(5));
+//        }
+
         return response()->json([
             'message' => 'Properties retrieved successfully',
             'properties' => $properties
@@ -128,6 +132,25 @@ class PropertyController extends Controller
             "files" => $temporaryUrls
         ];
 
+        return response()->json($dto,200);
+    }
+
+    public function getThumbnail($sc_id) {
+        $property = Property::where('sc_id', $sc_id)->firstOrFail();
+
+        $propertyFile = PropertyFiles::where('property_id', $property->id)->firstOrFail();
+
+        $path = "aqaro/{$property->id}";
+        $files = Storage::disk('do_spaces')->files($path);
+
+        $url = '';
+        for($i = 0; $i < 1; $i++) {
+            $url = Storage::disk('do_spaces')->temporaryUrl($files[$i], now()->addMinutes(5));
+        }
+
+        $dto = [
+            "thumbnail" => $url,
+        ];
         return response()->json($dto,200);
     }
 }
