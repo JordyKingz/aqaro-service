@@ -25,13 +25,24 @@ Route::post('/subscribe', [App\Http\Controllers\SubscriptionController::class,'s
 Route::group(['prefix' => 'property'], function () {
     Route::get('get-all/{page}/{limit}', [App\Http\Controllers\PropertyController::class, 'getAll']);
     Route::get('get-by-id/{id}', [App\Http\Controllers\PropertyController::class, 'getById']);
-
     Route::get('get-thumbnail/{sc_id}', [App\Http\Controllers\PropertyController::class, 'getThumbnail']);
+});
+
+Route::group(['prefix' => 'proposal'], function () {
+    Route::get('get-all/{page}/{limit}', [App\Http\Controllers\ProposalController::class, 'getAll']);
+    Route::get('{id}', [App\Http\Controllers\ProposalController::class, 'getById']);
 });
 
 Route::middleware(['auth:sanctum', 'abilities:is-web3-auth'])->group(function () {
     Route::group(['prefix' => 'property'], function () {
         Route::post('create', [App\Http\Controllers\PropertyController::class, 'create']);
         Route::post('update', [App\Http\Controllers\PropertyController::class, 'update']);
+    });
+
+    Route::group(['prefix' => 'proposal'], function () {
+        Route::post('create', [App\Http\Controllers\ProposalController::class, 'create']);
+
+        Route::post('{id}/like', [App\Http\Controllers\ProposalController::class, 'like']);
+        Route::post('{id}/dislike', [App\Http\Controllers\ProposalController::class, 'dislike']);
     });
 });
