@@ -52,4 +52,14 @@ class User extends Authenticatable
     public function properties() {
         return $this->hasMany(Property::class);
     }
+
+    public function likedProposals()
+    {
+        return $this->belongsToMany(Proposal::class, 'likes');
+    }
+
+    public function dislikedProposals()
+    {
+        return $this->belongsToMany(Proposal::class, 'dislikes');
+    }
 }
