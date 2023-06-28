@@ -53,6 +53,10 @@ class ProposalController extends Controller
             return response()->json(['message' => 'Proposal already liked'], 400);
         }
 
+        if ($proposal->dislikes()->where('user_id', $user->id)->exists()) {
+            $proposal->dislikes()->where('user_id', $user->id)->delete();
+        }
+
         $proposal->likes()->create(['user_id' => $user->id]);
 
         return response()->json(['message' => 'Proposal liked']);
@@ -65,6 +69,10 @@ class ProposalController extends Controller
 
         if ($proposal->dislikes()->where('user_id', $user->id)->exists()) {
             return response()->json(['message' => 'Proposal already disliked'], 400);
+        }
+
+        if ($proposal->likes()->where('user_id', $user->id)->exists()) {
+            $proposal->likes()->where('user_id', $user->id)->delete();
         }
 
         $proposal->dislikes()->create(['user_id' => $user->id]);
